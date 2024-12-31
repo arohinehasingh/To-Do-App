@@ -1,35 +1,68 @@
-let inputs = document.getElementById("inp");
-let text = document.querySelector(".text");
-let toDoListUl = document.getElementById("toDoListUL");
+const addUserBtn = document.getElementById('addUser');
+const btnText = addUserBtn.innerText;
+const usernameTextField = document.getElementById('username');
+const recordsDisplay = document.getElementById('records');
+let userArray = [];
+let edit_id = null;
 
-function Add(){
-    if(inputs.value == ""){
-        alert("Please Enter Task")
-    }else{
-        let newEle = document.createElement("li");
+let objStr = localStorage.getItem('users');
 
-        newEle.innerHTML=`${inputs.value} <button onclick="edit(this)">Edit</button> <button onclick="del(this)" >delete</button>`;
-           
-        toDoListUl.appendChild(newEle);
-        
-        inputs.value="";
-        // newEle.querySelector("button").addEventListener("click" , remove);
-
-        // function remove(){
-        //     newEle.remove()
-        // }
-        
-
-        
-    }
-
-   
+if (objStr != null) {
+   userArray = JSON.parse(objStr);
 }
 
-function edit(el){
-console.log("edit clicked" + el)
+DisplayInfo();
+addUserBtn.onclick = () => {
+   //get user's name from text field
+   const name = usernameTextField.value;
+   if (edit_id != null) {
+      //edit action
+      userArray.splice(edit_id, 1, {
+         'name': name
+      });
+      edit_id = null;
+   } else {
+      //insert action
+      userArray.push({
+         'name': name
+      });
+   }
+
+   SaveInfo(userArray);
+   usernameTextField.value = '';
+   addUserBtn.innerText = btnText;
 }
 
-function del(el){
-console.log("del clicked");
+// store user's name in local storage
+function SaveInfo(userArray) {
+   let str = JSON.stringify(userArray);
+   localStorage.setItem('users', str);
+   DisplayInfo();
+}
+
+// display user's name
+function DisplayInfo() {
+   let statement = '';
+   userArray.forEach((user, i) => {
+      statement += `<tr>
+           <th scope="row">${i+1}</th>
+           <td>${user.name}</td>
+           <td><i class="btn text-white fa fa-edit btn-info mx-2" onclick='EditInfo(${i})'></i> <i class="btn btn-danger text-white fa fa-trash" onclick='DeleteInfo(${i})'></i></td>
+         </tr>`;
+   });
+   recordsDisplay.innerHTML = statement;
+}
+
+// edit user's name
+function EditInfo(id) {
+   edit_id = id;
+   usernameTextField.value = userArray[id].name;
+   addUserBtn.innerText = 'Save Changes';
+}
+
+//delete user's name
+function DeleteInfo(id) {
+   userArray.splice(id, 1);
+   SaveInfo(userArray);
+
 }
